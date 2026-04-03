@@ -3,13 +3,16 @@ using Microsoft.EntityFrameworkCore;
 
 [ApiController]
 [Route("api/[controller]")]
+
 public class ProdutoController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly ApiService _apiService;
 
-    public ProdutoController(AppDbContext context)
+    public ProdutoController(AppDbContext context, ApiService apiService)
     {
         _context = context;
+        _apiService = apiService;
     }
 
     [HttpGet]
