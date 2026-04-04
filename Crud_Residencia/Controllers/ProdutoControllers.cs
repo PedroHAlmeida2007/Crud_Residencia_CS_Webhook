@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 
 [ApiController]
 [Route("api/[controller]")]
-
 public class ProdutoController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -15,6 +14,7 @@ public class ProdutoController : ControllerBase
         _apiService = apiService;
     }
 
+    // ✅ Endpoints do banco de dados (já existiam)
     [HttpGet]
     public async Task<IActionResult> Get()
     {
@@ -32,30 +32,54 @@ public class ProdutoController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Put(int id, Produto produto)
     {
-    var produtoBanco = await _context.Produtos.FindAsync(id);
+        var produtoBanco = await _context.Produtos.FindAsync(id);
+        if (produtoBanco == null)
+            return NotFound();
 
-    if (produtoBanco == null)
-        return NotFound();
-
-    produtoBanco.Nome = produto.Nome;
-    produtoBanco.Preco = produto.Preco;
-
-    await _context.SaveChangesAsync();
-
-    return Ok(produtoBanco);
+        produtoBanco.Nome = produto.Nome;
+        produtoBanco.Preco = produto.Preco;
+        await _context.SaveChangesAsync();
+        return Ok(produtoBanco);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-    var produto = await _context.Produtos.FindAsync(id);
+        var produto = await _context.Produtos.FindAsync(id);
+        if (produto == null)
+            return NotFound();
 
-    if (produto == null)
-        return NotFound();
+        _context.Produtos.Remove(produto);
+        await _context.SaveChangesAsync();
+        return Ok("Produto removido");
+    }
 
-    _context.Produtos.Remove(produto);
-    await _context.SaveChangesAsync();
+    // ✅ Endpoints que chamam o ApiService (novos!)
+    [HttpGet("mock")]
+    public async Task<IActionResult> GetMock()
+    {
+        var resultado = await _apiService.GetProdutos();
+        return Ok(resultado);
+    }
 
-    return Ok("Produto removido");
+    [HttpPost("mock")]
+    public async Task<IActionResult> PostMock([FromBody] object produto)
+    {
+        var resultado = await _apiService.PostProduto(produto);
+        return Ok(resultado);
+    }
+
+    [HttpPut("mock/{id}")]
+    public async Task<IActionResult> PutMock(int id, [FromBody] object produto)
+    {
+        var resultado = await _apiService.PutProduto(id, produto);
+        return Ok(resultado);
+    }
+
+    [HttpDelete("mock/{id}")]
+    public async Task<IActionResult> DeleteMock(int id)
+    {
+        var resultado = await _apiService.DeleteProduto(id);
+        return Ok(resultado);
     }
 }
