@@ -1,0 +1,7 @@
+services:
+  mock-server:
+    image: clue/json-server
+    ports:
+      - "3000:80"
+    volumes:
+      - ./mock-data/db.json:/data/db.json
